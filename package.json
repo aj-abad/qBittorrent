@@ -1,0 +1,40 @@
+{
+  "name": "qbittorrent-desktop",
+  "version": "0.0.1",
+  "private": true,
+  "description": "qBittorrent — Electron + Nuxt desktop frontend over the qBittorrent Web API",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "build": "pnpm run generate",
+    "preview": "pnpm run generate && electron .",
+    "dist": "pnpm run generate && electron-builder",
+    "backend:build": "cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build",
+    "postinstall": "nuxt prepare"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@tailwindcss/vite": "^4.2.1",
+    "electron": "^42.3.2",
+    "electron-builder": "^26.8.1",
+    "nuxt-electron": "^0.7.0",
+    "tailwindcss": "^4.2.1",
+    "vite-plugin-electron": "^1.0.0",
+    "vite-plugin-electron-renderer": "^1.0.0"
+  },
+  "dependencies": {
+    "@phosphor-icons/vue": "^2.2.1",
+    "geist": "^1.7.2",
+    "motion-v": "^2.2.1",
+    "nuxt": "^4.4.6",
+    "reka-ui": "^2.9.9",
+    "tailwind-merge": "^3.5.0",
+    "vue": "^3.5.34",
+    "vue-router": "^5.0.7"
+  },
+  "main": "dist-electron/main.js"
+}

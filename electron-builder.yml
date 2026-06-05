@@ -1,0 +1,20 @@
+appId: org.qbittorrent.desktop
+productName: qBittorrent
+directories:
+  output: release
+  buildResources: electron/resources
+files:
+  - dist-electron/**
+  - .output/public/**
+  - package.json
+win:
+  target:
+    - nsis
+mac:
+  target:
+    - dmg
+  category: public.app-category.utilities
+linux:
+  target:
+    - AppImage
+  category: Network

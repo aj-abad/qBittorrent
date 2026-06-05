@@ -41,3 +41,25 @@ src/icons/skin/build-icons/icons/*.png
 
 # CMake build directory
 build/
+
+# --- Nuxt + Electron desktop frontend ---
+node_modules/
+# Nuxt dev/build outputs (note: do NOT add bare `dist` — qBittorrent has a
+# tracked dist/ source directory; Nuxt output goes to .output)
+.output
+.data
+.nuxt
+.nitro
+.cache
+# Electron build outputs
+dist-electron
+# electron-builder output
+release/
+
+# Misc
+.fleet
+.idea
+# Local env files
+.env
+.env.*
+!.env.example
