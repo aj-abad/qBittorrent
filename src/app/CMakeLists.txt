@@ -55,7 +55,6 @@ target_sources(qbt_app PRIVATE
     upgrade.cpp
 
     # resources
-    "${qBittorrent_SOURCE_DIR}/src/icons/icons.qrc"
     "${qBittorrent_SOURCE_DIR}/src/searchengine/searchengine.qrc"
     ${QBT_QM_FILES}
     "${qBittorrent_BINARY_DIR}/src/lang/lang.qrc" # yes, it's supposed to be "*_BINARY_DIR"
@@ -66,11 +65,7 @@ target_link_libraries(qbt_app PRIVATE
 )
 
 set_target_properties(qbt_app PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-if (GUI)
-    set_target_properties(qbt_app PROPERTIES OUTPUT_NAME qbittorrent)
-else()
-    set_target_properties(qbt_app PROPERTIES OUTPUT_NAME qbittorrent-nox)
-endif()
+set_target_properties(qbt_app PROPERTIES OUTPUT_NAME qbittorrent-nox)
 
 # Additional platform specific configuration
 # -----------------------------------------------------------------------------
@@ -129,13 +124,6 @@ endif()
 # Additional feature dependent configuration
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
-if (GUI)
-    target_link_libraries(qbt_app PRIVATE qbt_gui)
-    if ((CMAKE_SYSTEM_NAME STREQUAL "Windows") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-        qt_import_plugins(qbt_app INCLUDE Qt::QSvgIconPlugin Qt::QSvgPlugin)
-    endif()
-endif()
-
 if (STACKTRACE)
     target_compile_definitions(qbt_app PRIVATE STACKTRACE)
 

@@ -50,10 +50,3 @@ find_package(Qt6 ${minQt6Version} REQUIRED COMPONENTS Core Network Sql Xml Lingu
 if (Qt6_FOUND AND (Qt6_VERSION VERSION_GREATER_EQUAL 6.10))
     find_package(Qt6 ${minQt6Version} REQUIRED COMPONENTS CorePrivate)
 endif()
-if (DBUS)
-    find_package(Qt6 ${minQt6Version} REQUIRED COMPONENTS DBus)
-    set_package_properties(Qt6DBus PROPERTIES
-        DESCRIPTION "Qt6 module for inter-process communication over the D-Bus protocol"
-        PURPOSE "Required by the DBUS feature"
-    )
-endif()

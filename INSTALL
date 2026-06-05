@@ -26,23 +26,20 @@ Dependency version numbers are bumped every once in a while to keep the range of
 You may be able to build with older versions of (some of) the dependencies other than the minimum versions specified in the build scripts, but support for such builds is not provided - you are on your own.
 Please ensure you are building with an officially supported configuration when reporting bugs.
 
-2a) Compile and install qBittorrent with Qt graphical interface
+2) Compile and install qBittorrent
+
+  qBittorrent is a headless application controlled through its built-in WebUI
+  (and Web API). The native Qt graphical interface has been removed; the
+  desktop frontend is now provided by a separate Electron application that
+  talks to the Web API.
 
   $ cmake -B build -DCMAKE_BUILD_TYPE=Release
   $ cmake --build build
   $ cmake --install build
-  $ qbittorrent
-
-  will install and execute qBittorrent.
-
-2b) Compile and install qBittorrent without Qt graphical interface
-
-  $ cmake -B build -DCMAKE_BUILD_TYPE=Release -DGUI=OFF
-  $ cmake --build build
-  $ cmake --install build
   $ qbittorrent-nox
 
-  will install and execute qBittorrent.
+  will install and execute qBittorrent. Then open the WebUI (by default at
+  http://localhost:8080) to control it.
 
 DOCUMENTATION:
 Please note that there is a "Compilation" section at https://wiki.qbittorrent.org.

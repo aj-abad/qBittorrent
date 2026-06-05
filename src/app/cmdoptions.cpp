@@ -40,18 +40,10 @@
 #include <QProcessEnvironment>
 #include <QStringView>
 
-#if defined(Q_OS_WIN) && !defined(DISABLE_GUI)
-#include <QMessageBox>
-#endif
-
 #include "base/global.h"
 #include "base/utils/fs.h"
 #include "base/utils/misc.h"
 #include "base/utils/string.h"
-
-#ifndef DISABLE_GUI
-#include "gui/utils.h"
-#endif
 
 namespace
 {
@@ -306,14 +298,10 @@ namespace
     };
 
     constexpr const BoolOption SHOW_HELP_OPTION {u"help", u'h'};
-#if !defined(Q_OS_WIN) || defined(DISABLE_GUI)
     constexpr const BoolOption SHOW_VERSION_OPTION {u"version", u'v'};
-#endif
     constexpr const BoolOption CONFIRM_LEGAL_NOTICE {u"confirm-legal-notice"};
-#if defined(DISABLE_GUI) && !defined(Q_OS_WIN)
+#ifndef Q_OS_WIN
     constexpr const BoolOption DAEMON_OPTION {u"daemon", u'd'};
-#else
-    constexpr const BoolOption NO_SPLASH_OPTION {u"no-splash"};
 #endif
     constexpr const IntOption WEBUI_PORT_OPTION {u"webui-port"};
     constexpr const IntOption TORRENTING_PORT_OPTION {u"torrenting-port"};
@@ -358,9 +346,9 @@ namespace
         const QString indentation {USAGE_INDENTATION, u' '};
 
 #if defined(Q_OS_WIN)
-        const QString noSplashCommand = u"set QBT_NO_SPLASH=1 && " + prgName;
+        const QString exampleCommand = u"set QBT_WEBUI_PORT=8080 && " + prgName;
 #else
-        const QString noSplashCommand = u"QBT_NO_SPLASH=1 " + prgName;
+        const QString exampleCommand = u"QBT_WEBUI_PORT=8080 " + prgName;
 #endif
 
         const QString text = QCoreApplication::translate("CMD Options", "Usage:") + u'\n'
@@ -368,9 +356,7 @@ namespace
 
             + QCoreApplication::translate("CMD Options", "Options:") + u'\n'
             + SHOW_HELP_OPTION.usage() + wrapText(QCoreApplication::translate("CMD Options", "Display this help message and exit")) + u'\n'
-#if !defined(Q_OS_WIN) || defined(DISABLE_GUI)
             + SHOW_VERSION_OPTION.usage() + wrapText(QCoreApplication::translate("CMD Options", "Display program version and exit")) + u'\n'
-#endif
             + CONFIRM_LEGAL_NOTICE.usage() + wrapText(QCoreApplication::translate("CMD Options", "Confirm the legal notice")) + u'\n'
             + WEBUI_PORT_OPTION.usage(QCoreApplication::translate("CMD Options", "port"))
             + wrapText(QCoreApplication::translate("CMD Options", "Change the WebUI port"))
@@ -378,9 +364,7 @@ namespace
             + TORRENTING_PORT_OPTION.usage(QCoreApplication::translate("CMD Options", "port"))
             + wrapText(QCoreApplication::translate("CMD Options", "Change the torrenting port"))
             + u'\n'
-#ifndef DISABLE_GUI
-            + NO_SPLASH_OPTION.usage() + wrapText(QCoreApplication::translate("CMD Options", "Disable splash screen")) + u'\n'
-#elif !defined(Q_OS_WIN)
+#ifndef Q_OS_WIN
             + DAEMON_OPTION.usage() + wrapText(QCoreApplication::translate("CMD Options", "Run in daemon-mode (background)")) + u'\n'
 #endif
         //: Use appropriate short form or abbreviation of "directory"
@@ -413,8 +397,8 @@ namespace
             + wrapText(QCoreApplication::translate("CMD Options", "Option values may be supplied via environment variables. For option named "
                                     "'parameter-name', environment variable name is 'QBT_PARAMETER_NAME' (in upper "
                                     "case, '-' replaced with '_'). To pass flag values, set the variable to '1' or "
-                                    "'TRUE'. For example, to disable the splash screen: "), 0) + u'\n'
-            + noSplashCommand + u'\n'
+                                    "'TRUE'. For example, to change the WebUI port: "), 0) + u'\n'
+            + exampleCommand + u'\n'
             + wrapText(QCoreApplication::translate("CMD Options", "Command line parameters take precedence over environment variables"), 0) + u'\n';
 
         return text;
@@ -424,9 +408,7 @@ namespace
 QBtCommandLineParameters::QBtCommandLineParameters(const QProcessEnvironment &env)
     : confirmLegalNotice(CONFIRM_LEGAL_NOTICE.value(env))
     , relativeFastresumePaths(RELATIVE_FASTRESUME.value(env))
-#ifndef DISABLE_GUI
-    , noSplash(NO_SPLASH_OPTION.value(env))
-#elif !defined(Q_OS_WIN)
+#ifndef Q_OS_WIN
     , shouldDaemonize(DAEMON_OPTION.value(env))
 #endif
     , webUIPort(WEBUI_PORT_OPTION.value(env, -1))
@@ -457,12 +439,10 @@ QBtCommandLineParameters parseCommandLine(const QStringList &args)
             {
                 result.showHelp = true;
             }
-#if !defined(Q_OS_WIN) || defined(DISABLE_GUI)
             else if (arg == SHOW_VERSION_OPTION)
             {
                 result.showVersion = true;
             }
-#endif
             else if (arg == CONFIRM_LEGAL_NOTICE)
             {
                 result.confirmLegalNotice = true;
@@ -483,12 +463,7 @@ QBtCommandLineParameters parseCommandLine(const QStringList &args)
                                                     .arg(u"--torrenting-port"_s));
                 }
             }
-#ifndef DISABLE_GUI
-            else if (arg == NO_SPLASH_OPTION)
-            {
-                result.noSplash = true;
-            }
-#elif !defined(Q_OS_WIN)
+#ifndef Q_OS_WIN
             else if (arg == DAEMON_OPTION)
             {
                 result.shouldDaemonize = true;
@@ -555,12 +530,5 @@ QBtCommandLineParameters parseCommandLine(const QStringList &args)
 
 void displayUsage(const QString &prgName)
 {
-#if defined(Q_OS_WIN) && !defined(DISABLE_GUI)
-    QMessageBox msgBox(QMessageBox::Information, QCoreApplication::translate("CMD Options", "Help"), makeUsage(prgName), QMessageBox::Ok);
-    msgBox.show(); // Need to be shown or to moveToCenter does not work
-    msgBox.move(Utils::Gui::screenCenter(&msgBox));
-    msgBox.exec();
-#else
     printf("%s\n", qUtf8Printable(makeUsage(prgName)));
-#endif
 }

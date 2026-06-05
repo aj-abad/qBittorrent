@@ -41,7 +41,7 @@
 #ifndef Q_OS_HAIKU
 #include <unistd.h>
 #endif // Q_OS_HAIKU
-#elif defined DISABLE_GUI
+#else
 #include <io.h>
 #endif
 
@@ -49,23 +49,7 @@
 #include <QString>
 #include <QThread>
 
-#ifndef DISABLE_GUI
-// GUI-only includes
-#include <QFont>
-#include <QMessageBox>
-#include <QPainter>
-#include <QPen>
-#include <QSplashScreen>
-#include <QTimer>
-
-#ifdef QBT_STATIC_QT
-#include <QtPlugin>
-Q_IMPORT_PLUGIN(QICOPlugin)
-#endif // QBT_STATIC_QT
-
-#else // DISABLE_GUI
 #include <cstdio>
-#endif // DISABLE_GUI
 
 #include "base/preferences.h"
 #include "base/profile.h"
@@ -76,12 +60,8 @@ Q_IMPORT_PLUGIN(QICOPlugin)
 #include "legalnotice.h"
 #include "signalhandler.h"
 
-#ifndef DISABLE_GUI
-#include "gui/utils.h"
-#else
 #ifndef Q_OS_WIN
 #include "base/logger.h"
-#endif
 #endif
 
 using namespace std::chrono_literals;
@@ -92,66 +72,22 @@ namespace
     void displayBadArgMessage(const QString &message)
     {
         const QString help = QCoreApplication::translate("Main", "Run application with -h option to read about command line parameters.");
-#if defined(Q_OS_WIN) && !defined(DISABLE_GUI)
-        QMessageBox msgBox(QMessageBox::Critical, QCoreApplication::translate("Main", "Bad command line"),
-                           (message + u'\n' + help), QMessageBox::Ok);
-        msgBox.show(); // Need to be shown or to moveToCenter does not work
-        msgBox.move(Utils::Gui::screenCenter(&msgBox));
-        msgBox.exec();
-#else
         const QString errMsg = QCoreApplication::translate("Main", "Bad command line: ") + u'\n'
             + message + u'\n'
             + help + u'\n';
         fprintf(stderr, "%s", qUtf8Printable(errMsg));
-#endif
     }
 
     void displayErrorMessage(const QString &message)
     {
-#ifndef DISABLE_GUI
-        if (QApplication::instance())
-        {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Critical);
-            msgBox.setText(QCoreApplication::translate("Main", "An unrecoverable error occurred."));
-            msgBox.setInformativeText(message);
-            msgBox.show(); // Need to be shown or to moveToCenter does not work
-            msgBox.move(Utils::Gui::screenCenter(&msgBox));
-            msgBox.exec();
-        }
-        else
-        {
-            const QString errMsg = QCoreApplication::translate("Main", "qBittorrent has encountered an unrecoverable error.") + u'\n' + message + u'\n';
-            fprintf(stderr, "%s", qUtf8Printable(errMsg));
-        }
-#else
         const QString errMsg = QCoreApplication::translate("Main", "qBittorrent has encountered an unrecoverable error.") + u'\n' + message + u'\n';
         fprintf(stderr, "%s", qUtf8Printable(errMsg));
-#endif
     }
 
-#if !defined(Q_OS_WIN) || defined(DISABLE_GUI)
     void displayVersion()
     {
         printf("%s %s\n", qUtf8Printable(qApp->applicationName()), QBT_VERSION);
     }
-#endif
-
-#ifndef DISABLE_GUI
-    void showSplashScreen()
-    {
-        QPixmap splashImg(u":/icons/splash.png"_s);
-        QPainter painter(&splashImg);
-        const auto version = QStringLiteral(QBT_VERSION);
-        painter.setPen(QPen(Qt::white));
-        painter.setFont(QFont(u"Arial"_s, 22, QFont::Black));
-        painter.drawText(224 - painter.fontMetrics().horizontalAdvance(version), 270, version);
-        QSplashScreen *splash = new QSplashScreen(splashImg);
-        splash->show();
-        QTimer::singleShot(1500ms, Qt::CoarseTimer, splash, &QObject::deleteLater);
-        qApp->processEvents();
-    }
-#endif  // DISABLE_GUI
 
 #ifdef Q_OS_UNIX
     void adjustFileDescriptorLimit()
@@ -178,9 +114,7 @@ namespace
 // Main
 int main(int argc, char *argv[])
 {
-#ifdef DISABLE_GUI
     setvbuf(stdout, nullptr, _IONBF, 0);
-#endif
 
 #ifdef Q_OS_UNIX
     adjustLocale();
@@ -213,13 +147,11 @@ int main(int argc, char *argv[])
             displayUsage(QString::fromLocal8Bit(argv[0]));
             return EXIT_SUCCESS;
         }
-#if !defined(Q_OS_WIN) || defined(DISABLE_GUI)
         if (params.showVersion)
         {
             displayVersion();
             return EXIT_SUCCESS;
         }
-#endif
 
         if (!params.unknownParameter.isEmpty())
         {
@@ -231,7 +163,7 @@ int main(int argc, char *argv[])
         // Check if qBittorrent is already running
         if (app->hasAnotherInstance())
         {
-#if defined(DISABLE_GUI) && !defined(Q_OS_WIN)
+#ifndef Q_OS_WIN
             if (params.shouldDaemonize)
             {
                 throw CommandLineParameterError(QCoreApplication::translate("Main", "You cannot use %1: qBittorrent is already running.")
@@ -258,9 +190,7 @@ int main(int argc, char *argv[])
 
         if (!legalNoticeShown)
         {
-#ifndef DISABLE_GUI
-            const bool isInteractive = true;
-#elif defined(Q_OS_WIN)
+#ifdef Q_OS_WIN
             const bool isInteractive = (_isatty(_fileno(stdin)) != 0) && (_isatty(_fileno(stdout)) != 0);
 #else
             // when run in daemon mode user can only dismiss the notice with command line option
@@ -286,7 +216,7 @@ int main(int argc, char *argv[])
             app->setAttribute(Qt::AA_DontShowIconsInMenus);
 #endif
 
-#if defined(DISABLE_GUI) && !defined(Q_OS_WIN)
+#ifndef Q_OS_WIN
         if (params.shouldDaemonize)
         {
             app.reset(); // Destroy current application instance
@@ -313,9 +243,6 @@ int main(int argc, char *argv[])
                 return EXIT_FAILURE;
             }
         }
-#elif !defined(DISABLE_GUI)
-        if (!(params.noSplash || Preferences::instance()->isSplashScreenDisabled()))
-            showSplashScreen();
 #endif
 
         registerSignalHandlers();

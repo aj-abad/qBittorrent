@@ -38,20 +38,12 @@
 #include <QStringList>
 #include <QTranslator>
 
-#ifndef DISABLE_GUI
-#include <QApplication>
-#endif
-
 #include "base/bittorrent/addtorrentparams.h"
 #include "base/interfaces/iapplication.h"
 #include "base/path.h"
 #include "base/settingvalue.h"
 #include "base/types.h"
 #include "cmdoptions.h"
-
-#ifndef DISABLE_GUI
-#include "gui/interfaces/iguiapplication.h"
-#endif
 
 class ApplicationInstanceManager;
 class FileLogger;
@@ -67,24 +59,9 @@ namespace RSS
     class AutoDownloader;
 }
 
-#ifndef DISABLE_GUI
-class QProgressDialog;
-
-class DesktopIntegration;
-class MainWindow;
-
-using AddTorrentManagerImpl = GUIAddTorrentManager;
-using BaseApplication = QApplication;
-using BaseIApplication = IGUIApplication;
-
-#ifdef Q_OS_WIN
-class QSessionManager;
-#endif
-#else // DISABLE_GUI
 using AddTorrentManagerImpl = AddTorrentManager;
 using BaseApplication = QCoreApplication;
 using BaseIApplication = IApplication;
-#endif // DISABLE_GUI
 
 #ifndef DISABLE_WEBUI
 class WebUI;
@@ -136,27 +113,12 @@ public:
     void setProcessMemoryPriority(MemoryPriority priority) override;
 #endif
 
-#ifndef DISABLE_GUI
-    DesktopIntegration *desktopIntegration() override;
-    MainWindow *mainWindow() override;
-
-    WindowState startUpWindowState() const override;
-    void setStartUpWindowState(WindowState windowState) override;
-
-    bool isTorrentAddedNotificationsEnabled() const override;
-    void setTorrentAddedNotificationsEnabled(bool value) override;
-#endif
-
 private slots:
     void processMessage(const QString &message);
     void torrentAdded(const BitTorrent::Torrent *torrent) const;
     void torrentFinished(const BitTorrent::Torrent *torrent);
     void allTorrentsFinished();
     void cleanup();
-
-#if (!defined(DISABLE_GUI) && defined(Q_OS_WIN))
-    void shutdownCleanup(QSessionManager &manager);
-#endif
 
 private:
     AddTorrentManagerImpl *addTorrentManager() const override;
@@ -176,15 +138,6 @@ private:
 #ifdef Q_OS_WIN
     void applyMemoryPriority() const;
     void adjustThreadPriority() const;
-#endif
-
-#ifndef DISABLE_GUI
-    void createStartupProgressDialog();
-#ifdef Q_OS_MACOS
-    bool event(QEvent *) override;
-#endif
-    void askRecursiveTorrentDownloadConfirmation(const BitTorrent::Torrent *torrent);
-    void recursiveTorrentDownload(const BitTorrent::TorrentID &torrentID);
 #endif
 
     ApplicationInstanceManager *m_instanceManager = nullptr;
@@ -217,15 +170,6 @@ private:
 #endif
 
     AddTorrentManagerImpl *m_addTorrentManager = nullptr;
-
-#ifndef DISABLE_GUI
-    SettingValue<WindowState> m_startUpWindowState;
-    SettingValue<bool> m_storeNotificationTorrentAdded;
-
-    DesktopIntegration *m_desktopIntegration = nullptr;
-    MainWindow *m_window = nullptr;
-    QProgressDialog *m_startupProgressDialog = nullptr;
-#endif
 
 #ifndef DISABLE_WEBUI
     WebUI *m_webui = nullptr;

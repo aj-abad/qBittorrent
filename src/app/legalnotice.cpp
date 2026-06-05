@@ -28,22 +28,12 @@
 
 #include "legalnotice.h"
 
-#ifdef DISABLE_GUI
 #include <cstdio>
-#endif // DISABLE_GUI
 
 #include <QCoreApplication>
 #include <QString>
 
-#ifndef DISABLE_GUI
-#include <QMessageBox>
-#endif // DISABLE_GUI
-
 #include "base/global.h"
-
-#ifndef DISABLE_GUI
-#include "gui/utils.h"
-#endif // DISABLE_GUI
 
 void showLegalNotice(const bool isInteractive)
 {
@@ -60,18 +50,10 @@ void showLegalNotice(const bool isInteractive)
         return;
     }
 
-#ifdef DISABLE_GUI
     const QString legalNotice = u"\n*** %1 ***\n"_s.arg(noticeTitle)
         + noticeBody + u"\n\n"
         + noticeEnd + u"\n\n"
         + QCoreApplication::translate("LegalNotice", "Press 'Enter' key to continue...");
     printf("%s", qUtf8Printable(legalNotice));
     getchar();
-#else // DISABLE_GUI
-    const QString messageBody = noticeBody + u"\n\n" + noticeEnd;
-    QMessageBox msgBox {QMessageBox::NoIcon, noticeTitle, messageBody, QMessageBox::Ok};
-    msgBox.show();  // Need to be shown first or moveToCenter does not work
-    msgBox.move(Utils::Gui::screenCenter(&msgBox));
-    msgBox.exec();
-#endif // DISABLE_GUI
 }

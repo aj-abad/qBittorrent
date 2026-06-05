@@ -755,12 +755,7 @@ void Preferences::setStoreOpenedSearchTabResults(const bool enabled)
 
 bool Preferences::isWebUIEnabled() const
 {
-#ifdef DISABLE_GUI
-    const bool defaultValue = true;
-#else
-    const bool defaultValue = false;
-#endif
-    return value(u"Preferences/WebUI/Enabled"_s, defaultValue);
+    return value(u"Preferences/WebUI/Enabled"_s, true);
 }
 
 void Preferences::setWebUIEnabled(const bool enabled)

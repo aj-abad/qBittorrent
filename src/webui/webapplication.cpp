@@ -215,14 +215,12 @@ void WebApplication::sendWebUIFile(const Http::HeaderMap &commonHeaders, Http::R
     {
         if (!Utils::Fs::isRegularFile(localPath))
         {
-#ifdef DISABLE_GUI
             if (path == INDEX_HTML)
             {
                 auto *preferences = Preferences::instance();
                 preferences->setAltWebUIEnabled(false);
                 preferences->apply();
             }
-#endif
             throw InternalServerErrorHTTPError(tr("Unacceptable file type, only regular file is allowed."));
         }
 
@@ -233,14 +231,12 @@ void WebApplication::sendWebUIFile(const Http::HeaderMap &commonHeaders, Http::R
         {
             if (fileInfo.isSymLink())
             {
-#ifdef DISABLE_GUI
                 if (path == INDEX_HTML)
                 {
                     auto *preferences = Preferences::instance();
                     preferences->setAltWebUIEnabled(false);
                     preferences->apply();
                 }
-#endif
                 throw InternalServerErrorHTTPError(tr("Symlinks inside alternative UI folder are forbidden."));
             }
 

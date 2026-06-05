@@ -268,14 +268,6 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries(qbt_base PRIVATE iphlpapi powrprof)
 endif()
 
-if (NOT GUI)
-    target_compile_definitions(qbt_base PUBLIC DISABLE_GUI)
-endif()
-
 if (NOT WEBUI)
     target_compile_definitions(qbt_base PUBLIC DISABLE_WEBUI)
-endif()
-
-if (DBUS)
-    target_link_libraries(qbt_base PUBLIC Qt::DBus)
 endif()
